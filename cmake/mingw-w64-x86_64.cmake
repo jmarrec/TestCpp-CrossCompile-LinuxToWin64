@@ -27,7 +27,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CONAN_HOST_PROFILE "${CMAKE_CURRENT_LIST_DIR}/conan_linux_to_win64")
 set(CONAN_DISABLE_CHECK_COMPILER ON)
 
-set(EXPLICIT_SHIP_DLLS OFF)
+set(EXPLICIT_SHIP_DLLS ON)
 
 if(NOT EXPLICIT_SHIP_DLLS)
   # Avoid having to explicitly ship the mingw dlls (libgcc_s_seh-1.dll  libstdc++-6.dll)

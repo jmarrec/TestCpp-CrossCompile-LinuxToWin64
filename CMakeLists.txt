@@ -196,6 +196,11 @@ add_executable(main
 )
 target_link_libraries(main PRIVATE testlib)
 
+###############################################################################
+#                              I N S T A L L E R                              #
+###############################################################################
+
+#################  C O N F I G U R A T I O N   #################
 
 if (APPLE)
   set(CPACK_IFW_TARGET_DIRECTORY /Applications/CrossCompile-Test-${PROJECT_VERSION}/)
@@ -234,3 +239,21 @@ cpack_add_component(Executable
 
 install(TARGETS testlib DESTINATION bin COMPONENT Libraries)
 install(TARGETS main DESTINATION bin COMPONENT Executable)
+
+#############   S Y S T E M    L I B R A R I E S   #############
+
+# Add compiler-provided system runtime libraries
+#if( NOT UNIX )
+  # Skip the call to install(PROGRAMS) so we can specify our own install rule (using the value of `CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS`)
+  set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+
+  # Set to TRUE to install the Windows Universal CRT libraries for app-local deployment.
+  # This is meaningful only with MSVC from Visual Studio 2015 or higher, which is our case
+  #SET(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
+
+  include(InstallRequiredSystemLibraries)
+  if(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+    message(WARNING "CMAKE_INSTALL_SYSTEM_RUNTIME_LIBs: ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}")
+    install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION "bin" COMPONENT Libraries)
+  endif()
+#endif()
