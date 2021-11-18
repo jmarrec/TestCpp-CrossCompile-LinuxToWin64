@@ -121,6 +121,7 @@ jobs:
       working-directory: ./test/${{ env.EXE_DIR }}
       shell: cmd
       run: |
+        dir
         main.exe
 
     - name: setup vcvarsall
