@@ -94,7 +94,7 @@ jobs:
     - name: Download the cross-compiled artifact
       uses: actions/download-artifact@v2
       with:
-        name: CrossCompileTest-${{ github.sha }}-native.tar.gz
+        name: CrossCompileTest-${{ github.sha }}-crosscompile.tar.gz
         path: ./test
 
     - name: Display structure of downloaded files
