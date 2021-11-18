@@ -110,3 +110,28 @@ jobs:
           tar -xzvf "$f";
         done;
         ls -R
+
+    - name: Test the executable
+      working-directory: ./test
+      shell: cmd
+      run: |
+        cd CrossCompileTest-*
+        bin\main.exe
+
+    - name: setup vcvarsall
+      shell: bash
+      run: |
+        # C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise
+        MSVC_DIR=$(cmd.exe /c "vswhere -products * -requires Microsoft.Component.MSBuild -property installationPath -latest")
+        echo "Latest is: $MSVC_DIR"
+        echo "MSVC_DIR=$MSVC_DIR" >> $GITHUB_ENV
+        # add folder containing vcvarsall.bat
+        echo "$MSVC_DIR\VC\Auxiliary\Build" >> $GITHUB_PATH
+
+    - name: inspect .exe
+      working-directory: ./test
+      shell: cmd
+      run: |
+        call vcvarsall.bat x64
+        cd CrossCompileTest-*
+        dumpbin /IMPORTS main.exe
