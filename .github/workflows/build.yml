@@ -106,5 +106,7 @@ jobs:
       working-directory: ./test
       shell: bash
       run: |
-        tar -xzvf "*.tar.gz";
+        for f in *.tar.gz; do
+          tar -xzvf "$f";
+        done;
         ls -R
