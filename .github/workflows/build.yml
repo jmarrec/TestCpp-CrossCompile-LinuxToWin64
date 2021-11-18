@@ -110,13 +110,16 @@ jobs:
           tar -xzvf "$f";
         done;
         ls -R
+        exe=$(find . -name main.exe -print -quit)
+        exe_dir=$(dirname $exe)
+        echo "EXE_DIR=$exe_dir" >> $GITHUB_ENV
+
 
     - name: Test the executable
-      working-directory: ./test
+      working-directory: ${{ env.EXE_DIR }}
       shell: cmd
       run: |
-        cd CrossCompileTest-*
-        bin\main.exe
+        main.exe
 
     - name: setup vcvarsall
       shell: bash
