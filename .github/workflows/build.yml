@@ -1,0 +1,116 @@
+name: C++ CI
+
+on:
+  push:
+    branches: [ main ]
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.build_type }}
+    strategy:
+      # fail-fast: Default is true, switch to false to allow one platform to fail and still run others
+      fail-fast: false
+      matrix:
+        build_type: [native, crosscompile]
+        include:
+        - build_type: native
+          LIB_EXT: so
+          BINARY_EXT: ""
+          toolchain_file: ""
+        - build_type: crosscompile
+          LIB_EXT: dll
+          BINARY_EXT: exe
+          toolchain_file: "-DCMAKE_TOOLCHAIN_FILE=../cmake/mingw-w64-x86_64.cmake"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install conan
+      run: |
+          python --version
+          pip install conan
+          conan --version
+          echo "Enabling conan revisions and setting parallel_download"
+          conan config set general.revisions_enabled=True
+          conan config set general.parallel_download=8
+          conan user
+
+    - name: Install deps
+      shell: bash
+      run: |
+        echo "Using apt to install ninja"
+        sudo apt update
+        sudo apt -y -qq install ninja-build
+        if [ "${{ matrix.build_type }}" == "crosscompile" ]; then
+          echo "Using apt to install mingw-w64"
+          sudo apt-get install mingw-w64
+        fi;
+
+        mkdir build
+
+    - name: CMake configure
+      working-directory: ./build
+      shell: bash
+      run: |
+        set -x
+        cmake -G Ninja ${{ matrix.toolchain_file }} -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON -DCPACK_BINARY_IFW:BOOL=OFF -DCPACK_BINARY_STGZ:BOOL=OFF -DCPACK_BINARY_TGZ:BOOL=ON -DCPACK_BINARY_TZ:BOOL=OFF -DCPACK_BINARY_NSIS:BOOL=OFF ../
+
+    - name: Build
+      working-directory: ./build
+      shell: bash
+      run: |
+        set -x
+        ninja
+
+    - name: Build package
+      working-directory: ./build
+      shell: bash
+      run: |
+        set -x
+        ninja package
+
+    - name: Archive binary artifacts
+      uses: actions/upload-artifact@v2
+      with:
+          name: CrossCompileTest-${{ github.sha }}-${{ matrix.build_type }}.tar.gz
+          path: build/CrossCompileTest-*.tar.gz
+
+  test:
+    needs: build
+    name: Test exe
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Download ALL artifacts
+      uses: actions/download-artifact@v2
+      with:
+        path: ./artifacts
+
+    - name: Display structure of downloaded files
+      working-directory: ./artifacts
+      run: |
+        ls -R
+
+    - name: Extract all tar.gzs
+      working-directory: ./artifacts
+      shell: bash
+      run: |
+        for f in **/*.tar.gz; do
+          mv $f .
+        done;
+
+        for f in *.tar.gz; do
+          tar -xzvf "$f";
+        done;
+
+        ls -R
