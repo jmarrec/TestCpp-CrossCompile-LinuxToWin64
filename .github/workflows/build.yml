@@ -112,11 +112,13 @@ jobs:
         ls -R
         exe=$(find . -name main.exe -print -quit)
         exe_dir=$(dirname $exe)
+        echo "exe=$exe"
+        echo "exe_dir=$exe_dir"
         echo "EXE_DIR=$exe_dir" >> $GITHUB_ENV
 
 
     - name: Test the executable
-      working-directory: ${{ env.EXE_DIR }}
+      working-directory: ./test/${{ env.EXE_DIR }}
       shell: cmd
       run: |
         main.exe
