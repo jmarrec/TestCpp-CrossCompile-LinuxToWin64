@@ -88,29 +88,23 @@ jobs:
   test:
     needs: build
     name: Test exe
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
 
-    - name: Download ALL artifacts
+    - name: Download the cross-compiled artifact
       uses: actions/download-artifact@v2
       with:
-        path: ./artifacts
+        name: CrossCompileTest-${{ github.sha }}-native.tar.gz
+        path: ./test
 
     - name: Display structure of downloaded files
-      working-directory: ./artifacts
+      working-directory: ./test
       run: |
         ls -R
 
-    - name: Extract all tar.gzs
-      working-directory: ./artifacts
+    - name: Extract the tar.gz
+      working-directory: ./test
       shell: bash
       run: |
-        for f in **/*.tar.gz; do
-          mv $f .
-        done;
-
-        for f in *.tar.gz; do
-          tar -xzvf "$f";
-        done;
-
+        tar -xzvf "*.tar.gz";
         ls -R
